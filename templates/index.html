@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prymage Assist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* BASE THEME (Light Mode) */
+        :root {
+            --purple: #4A256B;
+            --gold: #CBA052;
+            --bg-body: #F4F7F9;
+            --panel-bg: #FFFFFF;
+            --header-bg: #FFFFFF;
+            --text-dark: #2C3E50;
+            --text-muted: #596A7A;
+            --border-light: #EAECEF;
+            --chat-bg: #FAFBFC;
+            --ai-msg-bg: #FFFFFF;
+            --input-bg: #F8F9FA;
+            --chip-bg: #FFF8EB;
+            --chip-text: #B08230;
+            --chip-hover: var(--gold);
+            --chip-hover-text: #FFFFFF;
+            --shadow: 0 12px 35px rgba(74, 37, 107, 0.08);
+        }
+
+        /* DARK MODE OVERRIDES */
+        body.dark-mode {
+            --bg-body: #0b0714;
+            --panel-bg: rgba(25, 18, 43, 0.85);
+            --header-bg: rgba(0, 0, 0, 0.2);
+            --text-dark: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border-light: rgba(255, 255, 255, 0.1);
+            --chat-bg: transparent;
+            --ai-msg-bg: rgba(0, 0, 0, 0.3);
+            --input-bg: rgba(255, 255, 255, 0.03);
+            --chip-bg: rgba(203, 160, 82, 0.1);
+            --chip-text: var(--gold);
+            --chip-hover: var(--gold);
+            --chip-hover-text: #000000;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        
+        .chat-container {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-light); 
+            border-radius: 16px;
+            box-shadow: var(--shadow); 
+            width: 100%;
+            max-width: 650px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 85vh;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        
+        .chat-header {
+            position: relative;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--header-bg);
+            transition: background 0.3s ease;
+        }
+
+        /* Top Corner Buttons */
+        .top-btn {
+            position: absolute;
+            top: 20px;
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-light);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .theme-btn { left: 20px; }
+        .theme-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--gold); color: var(--gold); }
+        
+        .reset-btn { right: 20px; }
+        .reset-btn:hover { background: rgba(255, 107, 107, 0.1); color: #ff6b6b; border-color: rgba(255, 107, 107, 0.4); }
+
+        .chat-header img {
+            height: 40px;
+            margin-bottom: 8px;
+            transition: filter 0.3s ease;
+        }
+        
+        /* Adjusting text colors based on theme */
+        body.dark-mode .chat-header h1 { color: #ffffff; }
+        .chat-header h1 {
+            color: var(--purple);
+            margin: 0;
+            font-size: 1.3rem;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            transition: color 0.3s ease;
+        }
+        
+        .chat-header p {
+            color: var(--gold);
+            font-size: 0.8rem;
+            margin: 4px 0 0 0;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .chat-box {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: var(--chat-bg); 
+            transition: background 0.3s ease;
+        }
+        
+        .message {
+            max-width: 82%;
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            animation: fadeIn 0.3s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-msg {
+            background: linear-gradient(135deg, var(--purple), #63328e);
+            color: #ffffff;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .ai-msg {
+            background: var(--ai-msg-bg);
+            color: var(--text-dark);
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+            border-left: 3px solid var(--gold); 
+            border-top: 1px solid var(--border-light);
+            border-right: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+        
+        .quick-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .chip {
+            background: var(--chip-bg); 
+            color: var(--chip-text);
+            border: 1px solid rgba(203, 160, 82, 0.3);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .chip:hover {
+            background: var(--chip-hover);
+            color: var(--chip-hover-text);
+            transform: translateY(-2px);
+        }
+        
+        .input-area {
+            padding: 20px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            gap: 12px;
+            background: var(--header-bg);
+            transition: background 0.3s ease;
+        }
+        
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-wrapper span {
+            position: absolute;
+            left: 15px;
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 14px 14px 45px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-light);
+            color: var(--text-dark);
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        input[type="text"]:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 2px rgba(203, 160, 82, 0.15);
+        }
+        
+        button.send-btn {
+            background: linear-gradient(135deg, var(--purple), #63328e);
+            color: white;
+            border: none;
+            padding: 0 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button.send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 37, 107, 0.3);
+        }
+        
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            padding: 15px 18px;
+            width: fit-content;
+        }
+        
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--gold);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <button onclick="toggleTheme()" class="top-btn theme-btn" id="theme-btn">🌙 Dark</button>
+        <button onclick="clearChat()" class="top-btn reset-btn">↻ Reset</button>
+        
+        <img src="/static/logo.png" alt="Prymage Logo" onerror="this.style.display='none'">
+        <h1>Prymage Assist</h1>
+        <p>Smart Support for Accounting & ERP Systems</p>
+    </div>
+    
+    <div class="chat-box" id="chat-box">
+        </div>
+    
+    <div class="input-area">
+        <div class="input-wrapper">
+            <span>💬</span>
+            <input type="text" id="user-input" placeholder="Describe your issue... (e.g., backup error)" onkeypress="handleEnter(event)">
+        </div>
+        <button class="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    // System Start: Check theme memory and load welcome message
+    window.onload = () => {
+        if(localStorage.getItem('prymage_theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('theme-btn').innerText = '☀️ Light';
+        }
+        resetChatUI();
+    };
+
+    // The Theme Toggle Logic
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        const btn = document.getElementById('theme-btn');
+        
+        if(document.body.classList.contains('dark-mode')) {
+            btn.innerText = '☀️ Light';
+            localStorage.setItem('prymage_theme', 'dark'); // Save to memory
+        } else {
+            btn.innerText = '🌙 Dark';
+            localStorage.setItem('prymage_theme', 'light'); // Save to memory
+        }
+    }
+
+    function handleEnter(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+
+    function sendQuickMessage(text) {
+        document.getElementById('user-input').value = text;
+        sendMessage();
+    }
+
+    function resetChatUI() {
+        const chatBox = document.getElementById('chat-box');
+        chatBox.innerHTML = `<div class="message ai-msg">
+<div style="text-align: center; font-weight: 700; font-size: 1.15rem; margin-bottom: 12px; color: var(--purple);">Welcome to Prymage Assist.</div>
+<div style="text-align: left; margin-bottom: 15px;">I can help with Tally, ERP systems, backups, licensing issues, and general IT support.</div>
+<div class="quick-chips">
+<div class="chip" onclick="sendQuickMessage('Backup Issues')">Backup Issues</div>
+<div class="chip" onclick="sendQuickMessage('License Problems')">License Problems</div>
+<div class="chip" onclick="sendQuickMessage('Create Users')">Create Users</div>
+<div class="chip" onclick="sendQuickMessage('Restore Data')">Restore Data</div>
+</div>
+</div>`;
+    }
+
+    async function clearChat() {
+        try {
+            await fetch('/clear', { method: 'POST' });
+            resetChatUI();
+        } catch (error) {
+            console.error("Failed to clear memory.");
+        }
+    }
+
+    async function sendMessage() {
+        const inputField = document.getElementById('user-input');
+        const message = inputField.value.trim();
+        if (!message) return;
+
+        const chatBox = document.getElementById('chat-box');
+
+        const userDiv = document.createElement('div');
+        userDiv.className = 'message user-msg';
+        userDiv.textContent = message;
+        chatBox.appendChild(userDiv);
+
+        inputField.value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message ai-msg typing-indicator';
+        loadingDiv.id = 'loading';
+        loadingDiv.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+        chatBox.appendChild(loadingDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            });
+            const data = await response.json();
+
+            document.getElementById('loading').remove();
+            
+            const aiDiv = document.createElement('div');
+            aiDiv.className = 'message ai-msg';
+            aiDiv.innerText = data.reply;
+            chatBox.appendChild(aiDiv);
+            
+        } catch (error) {
+            document.getElementById('loading').remove();
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'message ai-msg';
+            errorDiv.style.borderLeftColor = '#ff6b6b';
+            errorDiv.textContent = 'Connection lost. Please check your network and try again.';
+            chatBox.appendChild(errorDiv);
+        }
+        
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+</script>
+
+</body>
+</html>
